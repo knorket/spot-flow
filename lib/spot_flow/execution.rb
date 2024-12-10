@@ -177,7 +177,7 @@ module SpotFlow
 
     def evaluate_expression(expression, variables: parent&.variables || {}.with_indifferent_access)
       expr = expression.start_with?("=") ? expression[1..-1] : expression
-      SpotFeel.evaluate(expr, variables:)
+      SpotFeel.evaluate(expr, variables: variables)
     end
 
     def run_automated_tasks
