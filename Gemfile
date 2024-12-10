@@ -1,5 +1,5 @@
 source "https://rubygems.org"
 
-gem "spot_feel", github: "connectedbits/spot-feel"
+gem "spot_feel", github: "knorket/spot-feel"
 
 gemspec
