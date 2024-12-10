@@ -125,9 +125,30 @@ module SpotFlow
         if time_date
           return Date.parse(time_date)
         elsif time_duration
-          return Time.zone.now + ActiveSupport::Duration.parse(time_duration)
+          return Time.zone.now + parse_duration(time_duration)
         else
           return Time.zone.now # time_cycle not yet implemented
+        end
+      end
+
+      def parse_duration(duration_string)
+        # Simple duration parser for ISO 8601 duration strings
+        # Handles basic formats like "PT1H" (1 hour), "P1D" (1 day), etc.
+        duration_string = duration_string.upcase
+        
+        case duration_string
+        when /^PT(\d+)H$/  # Hours
+          $1.to_i.hours
+        when /^PT(\d+)M$/  # Minutes
+          $1.to_i.minutes
+        when /^PT(\d+)S$/  # Seconds
+          $1.to_i.seconds
+        when /^P(\d+)D$/   # Days
+          $1.to_i.days
+        when /^P(\d+)W$/   # Weeks
+          $1.to_i.weeks
+        else
+          raise ArgumentError, "Unsupported duration format: #{duration_string}"
         end
       end
     end

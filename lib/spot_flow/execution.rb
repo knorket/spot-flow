@@ -28,9 +28,9 @@ module SpotFlow
       step_type = attributes.delete("step_type")
       step = step_type == "Process" ? context.process_by_id(step_id) : context.element_by_id(step_id)
       child_attributes = attributes.delete("children")
-      Execution.new(attributes.merge(step: step, context:)).tap do |execution|
+      Execution.new(attributes.merge(step: step, context: context)).tap do |execution|
         execution.children = child_attributes.map do |ca| 
-          Execution.from_json(ca, context:).tap { |child| child.parent = execution }
+          Execution.from_json(ca, context: context).tap { |child| child.parent = execution }
         end if child_attributes
       end
     end
@@ -171,11 +171,13 @@ module SpotFlow
     end
 
     def evaluate_condition(condition)
-      evaluate_expression(condition.delete_prefix("=")) == true
+      expression = condition.start_with?("=") ? condition[1..-1] : condition
+      evaluate_expression(expression) == true
     end
 
     def evaluate_expression(expression, variables: parent&.variables || {}.with_indifferent_access)
-      SpotFeel.evaluate(expression.delete_prefix("="), variables:)
+      expr = expression.start_with?("=") ? expression[1..-1] : expression
+      SpotFeel.evaluate(expr, variables:)
     end
 
     def run_automated_tasks
@@ -235,8 +237,8 @@ module SpotFlow
       active_tokens.uniq
     end
 
-    def serialize(...)
-      to_json(...)
+    def serialize(*args)
+      to_json(*args)
     end
 
     def as_json(_options = {})
@@ -256,7 +258,7 @@ module SpotFlow
         timer_expires_at: timer_expires_at,
         condition: condition,
         children: children.map { |child| child.as_json },
-      }.transform_values(&:presence).compact
+      }.transform_values { |v| v.presence }.compact
     end
 
     def inspect
@@ -296,7 +298,7 @@ module SpotFlow
 
     def result_to_variables(result)
       if step.respond_to?(:result_variable) && step.result_variable
-        return { "#{step.result_variable}": result }
+        { step.result_variable.to_sym => result }
       else
         if result.is_a? Hash
           result

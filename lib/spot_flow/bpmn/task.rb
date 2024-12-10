@@ -22,7 +22,7 @@ module SpotFlow
 
       def result_to_variables(result)
         if result_variable
-          return { "#{result_variable}": result }
+          return { result_variable.to_sym => result }
         else
           if result.is_a? Hash
             result
